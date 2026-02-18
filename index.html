@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Match</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card" id="mainCard">
+  <h1>RANDOM MATCH</h1>
+
+  <input type="text" id="nickname" placeholder="Enter your nickname">
+
+  <div class="avatar-wrapper">
+    <div class="avatar-circle" id="avatarCircle">
+      <span class="plus-sign">+</span>
+      <img id="avatarPreview" class="avatar-preview">
+    </div>
+    <input type="file" id="avatarInput" accept="image/*">
+  </div>
+
+  <button class="button voice" id="voiceBtn">Start Voice Call</button>
+  <button class="button video" id="videoBtn">Start Video Call</button>
+</div>
+
+<div class="card" id="waitingCard" style="display:none;">
+  <h2>Waiting for a random match...</h2>
+  <div class="loader"></div>
+  <button class="button next" id="nextBtn">Next Match</button>
+  <button class="button disconnect" id="disconnectBtn">Disconnect</button>
+</div>
+
+<div class="card" id="callCard" style="display:none;">
+  <h2 id="peerName"></h2>
+  <img id="peerAvatar" class="avatar-preview">
+  <video id="remoteVideo" autoplay playsinline></video>
+  <button class="button disconnect" id="endCallBtn">End Call</button>
+</div>
+
+<!-- PeerJS Cloud Library -->
+<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+
+<!-- Adsterra Ad -->
+<script src="https://pl28740334.effectivegatecpm.com/04/7b/14/047b14cf60657df4f417f3bbb5ebcbef.js"></script>
+
+<script src="app.js"></script>
+</body>
+</html>
