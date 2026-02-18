@@ -34,6 +34,32 @@ avatarInput.addEventListener("change", function(){
 let peer, currentCall;
 let waitingPeers = [];
 
+// إعداد WebSocket صغير جداً للتوصيل العالمي
+const ws = new WebSocket("wss://ws-server-production-682a.up.railway.app"); // هنا رابط السيرفر الحقيقي
+
+ws.onopen = ()=>{
+  console.log("Connected to WebSocket server for global matching");
+};
+
+ws.onmessage = (msg)=>{
+  const data = JSON.parse(msg.data);
+  if(data.type==="matchRequest"){
+    // إضافة كل المستخدمين الجدد للقائمة المؤقتة
+    if(!waitingPeers.find(p=>p.id===data.id)){
+      waitingPeers.push({id:data.id, name:data.name, avatar:data.avatar});
+    }
+  }
+};
+
+function sendMatchRequest(myData){
+  ws.send(JSON.stringify({
+    type:"matchRequest",
+    id:myData.id,
+    name:myData.name,
+    avatar:myData.avatar
+  }));
+}
+
 function startCall(type){
   const name = nicknameInput.value.trim();
   if(!name){ alert("Enter your nickname!"); return; }
@@ -50,9 +76,11 @@ function startCall(type){
 
   peer.on('open', id=>{
     console.log("Your Peer ID:", id);
-    // إضافة شرط منع الاتصال مع النفس
-    waitingPeers.push({id, name, avatar: avatarPreview.src});
-    checkMatch(type, id);
+    const myData = {id, name, avatar: avatarPreview.src};
+    waitingPeers.push(myData);
+    sendMatchRequest(myData); // نرسل بياناتنا للعالم
+
+    setTimeout(()=> tryMatch(type, id), 2000); // محاولة البحث بعد 2 ثانية
   });
 
   navigator.mediaDevices.getUserMedia({
@@ -65,7 +93,7 @@ function startCall(type){
   });
 
   peer.on('call', call=>{
-    if(call.peer === peer.id) return; // منع self-call
+    if(call.peer===peer.id) return; // منع self-call
     currentCall = call;
     call.answer(window.localStream);
     call.on('stream', remoteStream=>{
@@ -83,8 +111,8 @@ function startCall(type){
   });
 }
 
-// البحث عن مطابقة عشوائية
-function checkMatch(type, myId){
+// البحث عن مطابقة عشوائية مع تأخير + إعادة محاولة تلقائية
+function tryMatch(type, myId){
   const others = waitingPeers.filter(p=>p.id!==myId);
   if(others.length>0){
     const random = others[Math.floor(Math.random()*others.length)];
@@ -99,6 +127,8 @@ function checkMatch(type, myId){
       peerAvatar.src = random.avatar;
       peerAvatar.style.display="block";
     });
+  } else {
+    setTimeout(()=> tryMatch(type, myId), 2000); // إعادة المحاولة كل ثانيتين
   }
 }
 
