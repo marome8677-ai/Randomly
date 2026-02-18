@@ -30,7 +30,7 @@ avatarInput.addEventListener("change", function(){
   }
 });
 
-// PeerJS setup + matchmaking عشوائي عالمي
+// PeerJS setup + matchmaking عشوائي عالمي مع منع الاتصال مع النفس
 let peer, currentCall;
 let waitingPeers = [];
 
@@ -50,6 +50,7 @@ function startCall(type){
 
   peer.on('open', id=>{
     console.log("Your Peer ID:", id);
+    // إضافة شرط منع الاتصال مع النفس
     waitingPeers.push({id, name, avatar: avatarPreview.src});
     checkMatch(type, id);
   });
@@ -64,6 +65,7 @@ function startCall(type){
   });
 
   peer.on('call', call=>{
+    if(call.peer === peer.id) return; // منع self-call
     currentCall = call;
     call.answer(window.localStream);
     call.on('stream', remoteStream=>{
